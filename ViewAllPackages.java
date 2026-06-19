@@ -1,0 +1,67 @@
+import java.sql.*;
+import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
+
+public class ViewAllPackages extends JFrame {
+
+    JTable table;
+    DefaultTableModel model;
+
+    ViewAllPackages() {
+
+        setTitle("All Package Bookings");
+
+        String[] columns = {
+                "Username",
+                "Package",
+                "Persons",
+                "ID",
+                "Number",
+                "Phone",
+                "Price",
+                "Status"
+        };
+
+        model = new DefaultTableModel(columns, 0);
+        table = new JTable(model);
+
+        try {
+
+            Conn c = new Conn();
+
+            ResultSet rs = c.s.executeQuery(
+                    "select * from bookpackage"
+            );
+
+            while(rs.next()) {
+
+                model.addRow(new Object[] {
+
+                        rs.getString("username"),
+                        rs.getString("package"),
+                        rs.getString("persons"),
+                        rs.getString("id"),
+                        rs.getString("number"),
+                        rs.getString("phone"),
+                        rs.getString("price"),
+                        rs.getString("status")
+
+                });
+            }
+
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
+
+        JScrollPane sp = new JScrollPane(table);
+        add(sp);
+
+        setSize(900,500);
+        setLocation(300,150);
+        setVisible(true);
+    }
+
+    public static void main(String[] args) {
+        new ViewAllPackages();
+    }
+}
