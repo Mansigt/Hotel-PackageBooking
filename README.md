@@ -1,5 +1,3 @@
-Hotel and Package Booking System
-
 ## Overview
 
 A desktop-based Hotel and Package Booking System developed using Java Swing, JDBC, and MySQL. The system allows customers to book travel packages and hotels while administrators can monitor users and bookings through a dedicated admin dashboard.
