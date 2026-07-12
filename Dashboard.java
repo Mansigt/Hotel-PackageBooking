@@ -193,7 +193,7 @@ public class Dashboard extends JFrame implements ActionListener {
     image.setBounds(0,0,1650,1000);
     add(image);
 
-    JLabel text=new JLabel("Hotel & Package Book");
+    JLabel text=new JLabel("Hotel & Package Booking");
     text.setBounds(400,70,1000,70);
     text.setFont(new Font("Tahoma",Font.BOLD,50));
     text.setForeground(Color.yellow);
