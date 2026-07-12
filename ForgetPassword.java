@@ -4,6 +4,7 @@ import java.awt.Font;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 
 import javax.swing.ImageIcon;
@@ -108,31 +109,34 @@ public class ForgetPassword extends JFrame implements ActionListener{
 	}
 	public void actionPerformed(ActionEvent ae){
 		if(ae.getSource()==search){
-			try {
-			String query="select * from account where username='"+tfusername.getText()+"'"	;
-			Conn c= new Conn();
-			ResultSet rs=c.s.executeQuery(query) ;
-			while(rs.next()){
-				tfname.setText(rs.getString("name"));
-				tfquestion.setText(rs.getString("security"));
-			}
+			String query="select * from account where username=?";
+			try (Conn c = new Conn();
+			     PreparedStatement pstmt = c.c.prepareStatement(query)) {
+				pstmt.setString(1, tfusername.getText());
+				try (ResultSet rs = pstmt.executeQuery()) {
+					while(rs.next()){
+						tfname.setText(rs.getString("name"));
+						tfquestion.setText(rs.getString("security"));
+					}
+				}
 			} catch (Exception e) {
-			e.printStackTrace();
-		}
-
+				e.printStackTrace();
+			}
 		}
 		else if(ae.getSource()==retrieve){
-         try {
-			String query="select * from account where answer='"+tfanswer.getText()+"' AND username='"+tfusername.getText()+"'";	;
-			Conn c= new Conn();
-			ResultSet rs=c.s.executeQuery(query) ;
-			while(rs.next()){
-				tfpassword.setText(rs.getString("password"));
-				
-			}
+			String query="select * from account where answer=? AND username=?";
+			try (Conn c = new Conn();
+			     PreparedStatement pstmt = c.c.prepareStatement(query)) {
+				pstmt.setString(1, tfanswer.getText());
+				pstmt.setString(2, tfusername.getText());
+				try (ResultSet rs = pstmt.executeQuery()) {
+					while(rs.next()){
+						tfpassword.setText(rs.getString("password"));
+					}
+				}
 			} catch (Exception e) {
-			e.printStackTrace();
-		}
+				e.printStackTrace();
+			}
 		}
 		else{
          setVisible(false);

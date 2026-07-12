@@ -4,6 +4,7 @@ import java.awt.Font;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -140,29 +141,28 @@ public class Viewbookedhotel extends JFrame implements ActionListener{
          add(image);  
 
          
-         try {
-             Conn conn=new Conn();
-             String query="select * from bookhotel where username='"+username+"'";
-            ResultSet rs= conn.s.executeQuery(query);
-            while(rs.next()){
-                labelusername.setText(rs.getString("username"));
-                
-                labelid.setText(rs.getString("id"));
-               
-                labelnumber.setText(rs.getString("number"));
-                 labelpackage.setText(rs.getString("name"));
-                
-                labelprice.setText(rs.getString("price"));
-                labelphone.setText(rs.getString("phone"));
-                labelpersons.setText(rs.getString("persons"));
-                 labelfood.setText(rs.getString("food"));
-               labelac.setText(rs.getString("ac"));
-               labeldays.setText(rs.getString("days"));
-               labelstatus.setText(rs.getString("status"));
-            }
-         } catch (Exception e) {
-            e.printStackTrace();
-         }
+          String selectQuery = "select * from bookhotel where username=?";
+          try (Conn conn = new Conn();
+               PreparedStatement pstmt = conn.c.prepareStatement(selectQuery)) {
+              pstmt.setString(1, username);
+              try (ResultSet rs = pstmt.executeQuery()) {
+                  while(rs.next()){
+                      labelusername.setText(rs.getString("username"));
+                      labelid.setText(rs.getString("id"));
+                      labelnumber.setText(rs.getString("number"));
+                      labelpackage.setText(rs.getString("name"));
+                      labelprice.setText(rs.getString("price"));
+                      labelphone.setText(rs.getString("phone"));
+                      labelpersons.setText(rs.getString("persons"));
+                      labelfood.setText(rs.getString("food"));
+                      labelac.setText(rs.getString("ac"));
+                      labeldays.setText(rs.getString("days"));
+                      labelstatus.setText(rs.getString("status"));
+                  }
+              }
+          } catch (Exception e) {
+              e.printStackTrace();
+          }
          setVisible(true);
 
     }
@@ -173,19 +173,15 @@ public class Viewbookedhotel extends JFrame implements ActionListener{
         }
         else if(ae.getSource()==cancel){
 
-        try{
-
-        Conn c = new Conn();
-        String query ="update bookhotel set status='Cancelled' where username='"+username+"'";
-        c.s.executeUpdate(query);
-        JOptionPane.showMessageDialog(null,
-        "Hotel booking cancelled successfully");
-
-        labelstatus.setText("Cancelled");
-
-        }catch(Exception e){
-        e.printStackTrace();
-       }
+        try (Conn c = new Conn();
+             PreparedStatement pstmt = c.c.prepareStatement("update bookhotel set status='Cancelled' where username=?")) {
+            pstmt.setString(1, username);
+            pstmt.executeUpdate();
+            JOptionPane.showMessageDialog(null, "Hotel booking cancelled successfully");
+            labelstatus.setText("Cancelled");
+        } catch(Exception e){
+            e.printStackTrace();
+        }
       }
     }
     public static void main(String[] args) {

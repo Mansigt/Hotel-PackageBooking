@@ -5,6 +5,7 @@ import java.awt.Font;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -125,37 +126,47 @@ public class Signup extends JFrame implements ActionListener
         String username=tfusername.getText();
         String name=tfname.getText();
         if(!name.matches("[a-zA-Z ]+")){
-    JOptionPane.showMessageDialog(null,
-        "Name cannot contain numbers");
-    return;
-}
+            JOptionPane.showMessageDialog(null, "Name cannot contain numbers");
+            return;
+        }
         String password=tfpassword.getText();
         String question=security.getSelectedItem();
         String answer=tfanswer.getText();
         String userrole=role.getSelectedItem();
 
-        String query="insert into account values('"+username+"','"+name+"','"+password+"','"+question+"','"+answer+"','"+userrole+"')";
-        try {
-          Conn c=new Conn();
-          String checkQuery ="select * from account where username='" + username + "'";
-          ResultSet rs = c.s.executeQuery(checkQuery);
-
-        if(rs.next()){
-             JOptionPane.showMessageDialog(null, "Username already exists");
-             return;
-         }
-         if(username.isEmpty() || name.isEmpty() || password.isEmpty() || answer.isEmpty()){
-
+        if(username.isEmpty() || name.isEmpty() || password.isEmpty() || answer.isEmpty()){
             JOptionPane.showMessageDialog(null,"All fields are required");
             return;
-             }
-          c.s.executeUpdate(query);
+        }
+
+        String checkQuery = "select * from account where username=?";
+        String insertQuery = "insert into account values(?, ?, ?, ?, ?, ?)";
+        
+        try (Conn c = new Conn();
+             PreparedStatement pstmtCheck = c.c.prepareStatement(checkQuery);
+             PreparedStatement pstmtInsert = c.c.prepareStatement(insertQuery)) {
+            
+            pstmtCheck.setString(1, username);
+            try (ResultSet rs = pstmtCheck.executeQuery()) {
+                if(rs.next()){
+                    JOptionPane.showMessageDialog(null, "Username already exists");
+                    return;
+                }
+            }
+            
+            pstmtInsert.setString(1, username);
+            pstmtInsert.setString(2, name);
+            pstmtInsert.setString(3, password);
+            pstmtInsert.setString(4, question);
+            pstmtInsert.setString(5, answer);
+            pstmtInsert.setString(6, userrole);
+            
+            pstmtInsert.executeUpdate();
 
             JOptionPane.showMessageDialog(null,"account created successfully");
             setVisible(false);
             new Login();
         } catch (Exception e) {
-           
             e.printStackTrace();
         }
     }else if(ae.getSource()==back){

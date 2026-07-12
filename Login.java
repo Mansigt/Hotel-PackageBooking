@@ -4,6 +4,7 @@ import java.awt.Font;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -113,25 +114,28 @@ public class Login extends JFrame implements ActionListener{
     @Override
     public void actionPerformed(ActionEvent ae){
         if(ae.getSource()==login){
-           try {
-                String username=tfusername.getText();
-                String pass=tfpassword.getText();
-                String query="SELECT * FROM account WHERE username='" +username+ "' AND password='" +pass+ "'";
+            String username=tfusername.getText();
+            String pass=tfpassword.getText();
+            String query="SELECT * FROM account WHERE username=? AND password=?";
+            
+            try (Conn c = new Conn();
+                 PreparedStatement pstmt = c.c.prepareStatement(query)) {
                 
-                Conn c =new Conn();
-                ResultSet rs=c.s.executeQuery(query);
-                if(rs.next()){
-                    String role = rs.getString("role");
-                    System.out.println("Logged in as: " + role);
-                    setVisible(false);
-                    new Loading(username,role);
-                }else{
-                    JOptionPane.showMessageDialog(null, "incorrect password or username");
+                pstmt.setString(1, username);
+                pstmt.setString(2, pass);
+                
+                try (ResultSet rs = pstmt.executeQuery()) {
+                    if(rs.next()){
+                        String role = rs.getString("role");
+                        System.out.println("Logged in as: " + role);
+                        setVisible(false);
+                        new Loading(username,role);
+                    }else{
+                        JOptionPane.showMessageDialog(null, "incorrect password or username");
+                    }
                 }
-                
             } catch (Exception e) {
-                //JOptionPane.showMessageDialog(this, e.getMessage());
-               e.printStackTrace();
+                e.printStackTrace();
             }
 
         }else if(ae.getSource()==signup){

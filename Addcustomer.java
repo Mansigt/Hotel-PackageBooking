@@ -3,6 +3,7 @@ import java.awt.Color;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 
 import javax.swing.ButtonGroup;
@@ -135,16 +136,18 @@ public class Addcustomer extends JFrame implements ActionListener {
         image.setBounds(400,40,450,420);
         add(image);
 
-        try {
-            Conn c=new Conn();
-            ResultSet rs=c.s.executeQuery("select * from account where username='"+username+"'");
-            while(rs.next()){
-                labelusername.setText(rs.getString("username"));
-                labelname.setText(rs.getString("name"));
-
+        String accountQuery = "select * from account where username=?";
+        try (Conn c = new Conn();
+             PreparedStatement pstmt = c.c.prepareStatement(accountQuery)) {
+            pstmt.setString(1, username);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                while(rs.next()){
+                    labelusername.setText(rs.getString("username"));
+                    labelname.setText(rs.getString("name"));
+                }
             }
         } catch (Exception e) {
-        e.printStackTrace();
+            e.printStackTrace();
         }
 
         
@@ -170,15 +173,25 @@ public class Addcustomer extends JFrame implements ActionListener {
             String phone=tfphone.getText();
             String email=tfemail.getText();
 
-            try {
-            Conn c=new Conn();
-            String query="insert into customer values('"+username+"','"+id+"','"+number+"','"+name+"','"+gender+"','"+country+"','"+address+"','"+phone+"','"+email+"')";
-            c.s.executeUpdate(query);
-            JOptionPane.showMessageDialog(null, "customer details added succcessfully");
-            setVisible(false);        
+            String insertQuery = "insert into customer values(?, ?, ?, ?, ?, ?, ?, ?, ?)";
+            try (Conn c = new Conn();
+                 PreparedStatement pstmt = c.c.prepareStatement(insertQuery)) {
+                pstmt.setString(1, username);
+                pstmt.setString(2, id);
+                pstmt.setString(3, number);
+                pstmt.setString(4, name);
+                pstmt.setString(5, gender);
+                pstmt.setString(6, country);
+                pstmt.setString(7, address);
+                pstmt.setString(8, phone);
+                pstmt.setString(9, email);
+                
+                pstmt.executeUpdate();
+                JOptionPane.showMessageDialog(null, "customer details added succcessfully");
+                setVisible(false);        
             } catch (Exception e) {
-            e.printStackTrace();
-        }
+                e.printStackTrace();
+            }
 
         }else{
             setVisible(false);

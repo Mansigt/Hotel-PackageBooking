@@ -25,13 +25,9 @@ public class ViewAllPackages extends JFrame {
         model = new DefaultTableModel(columns, 0);
         table = new JTable(model);
 
-        try {
-
-            Conn c = new Conn();
-
-            ResultSet rs = c.s.executeQuery(
-                    "select * from bookpackage"
-            );
+        try (Conn c = new Conn();
+             PreparedStatement pstmt = c.c.prepareStatement("select * from bookpackage");
+             ResultSet rs = pstmt.executeQuery()) {
 
             while(rs.next()) {
 

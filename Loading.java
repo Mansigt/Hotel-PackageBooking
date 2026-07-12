@@ -44,7 +44,7 @@ public Loading(String username,String role){
    getContentPane().setBackground(Color.WHITE);
    setLayout(null);
    
-   JLabel text=new JLabel("Travel and Tourism Application");
+   JLabel text=new JLabel("Hotel & Package Booking");
    text.setBounds(50,20,600,40);
    text.setForeground(Color.BLUE);
    text.setFont(new Font("Raleway",Font.BOLD,35)) ;

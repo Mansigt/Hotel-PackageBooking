@@ -20,13 +20,9 @@ public class ViewAllUsers extends JFrame {
         model = new DefaultTableModel(columns,0);
         table = new JTable(model);
 
-        try{
-
-            Conn c = new Conn();
-
-            ResultSet rs = c.s.executeQuery(
-                    "select * from account"
-            );
+        try (Conn c = new Conn();
+             PreparedStatement pstmt = c.c.prepareStatement("select * from account");
+             ResultSet rs = pstmt.executeQuery()) {
 
             while(rs.next()){
 

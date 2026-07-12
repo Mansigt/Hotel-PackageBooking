@@ -24,13 +24,9 @@ public class ViewAllHotels extends JFrame {
         model = new DefaultTableModel(columns, 0);
         table = new JTable(model);
 
-        try {
-
-            Conn c = new Conn();
-
-            ResultSet rs = c.s.executeQuery(
-                    "select * from bookhotel"
-            );
+        try (Conn c = new Conn();
+             PreparedStatement pstmt = c.c.prepareStatement("select * from bookhotel");
+             ResultSet rs = pstmt.executeQuery()) {
 
             while(rs.next()) {
 

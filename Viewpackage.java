@@ -4,6 +4,7 @@ import java.awt.Font;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -125,24 +126,25 @@ public class Viewpackage extends JFrame implements ActionListener{
          add(image);  
 
          
-         try {
-             Conn conn=new Conn();
-             String query="select * from bookpackage where username='"+username+"'";
-            ResultSet rs= conn.s.executeQuery(query);
-            while(rs.next()){
-                labelusername.setText(rs.getString("username"));
-                labelid.setText(rs.getString("id"));
-                labelnumber.setText(rs.getString("number"));
-                labelpackage.setText(rs.getString("package"));
-                labelprice.setText(rs.getString("price"));
-                labelphone.setText(rs.getString("phone"));
-                labelpersons.setText(rs.getString("persons"));
-                labelstatus.setText(rs.getString("status"));
-               
-            }
-         } catch (Exception e) {
-            e.printStackTrace();
-         }
+          String selectQuery = "select * from bookpackage where username=?";
+          try (Conn conn = new Conn();
+               PreparedStatement pstmt = conn.c.prepareStatement(selectQuery)) {
+              pstmt.setString(1, username);
+              try (ResultSet rs = pstmt.executeQuery()) {
+                  while(rs.next()){
+                      labelusername.setText(rs.getString("username"));
+                      labelid.setText(rs.getString("id"));
+                      labelnumber.setText(rs.getString("number"));
+                      labelpackage.setText(rs.getString("package"));
+                      labelprice.setText(rs.getString("price"));
+                      labelphone.setText(rs.getString("phone"));
+                      labelpersons.setText(rs.getString("persons"));
+                      labelstatus.setText(rs.getString("status"));
+                  }
+              }
+          } catch (Exception e) {
+              e.printStackTrace();
+          }
          setVisible(true);
 
     }
@@ -153,20 +155,14 @@ public class Viewpackage extends JFrame implements ActionListener{
       }
        else if(ae.getSource()==cancel){
 
-       try{
-
-        Conn c = new Conn();
-        String query ="update bookpackage set status='Cancelled' where username='"+username+"'";
-
-        c.s.executeUpdate(query);
-
-        JOptionPane.showMessageDialog(null,
-            "Package booking cancelled successfully");
-
-    }
-    catch(Exception e){
-        e.printStackTrace();
-    }
+        try (Conn c = new Conn();
+             PreparedStatement pstmt = c.c.prepareStatement("update bookpackage set status='Cancelled' where username=?")) {
+            pstmt.setString(1, username);
+            pstmt.executeUpdate();
+            JOptionPane.showMessageDialog(null, "Package booking cancelled successfully");
+        } catch(Exception e){
+            e.printStackTrace();
+        }
 
 }
      else if(ae.getSource()==receipt){

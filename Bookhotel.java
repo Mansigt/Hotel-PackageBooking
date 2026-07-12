@@ -5,6 +5,7 @@ import java.awt.Font;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -49,9 +50,9 @@ public class Bookhotel extends JFrame implements ActionListener{
          chotel=new Choice();
          chotel.setBounds(250,110,200,20);
          add(chotel);
-        try {
-            Conn c=new Conn();
-            ResultSet rs=c.s.executeQuery("select * from hotel");
+        try (Conn c = new Conn();
+             PreparedStatement pstmt = c.c.prepareStatement("select * from hotel");
+             ResultSet rs = pstmt.executeQuery()) {
             while(rs.next()){
                 chotel.add(rs.getString("name"));
             }
@@ -135,21 +136,21 @@ public class Bookhotel extends JFrame implements ActionListener{
          labeltotal=new JLabel();
          labeltotal.setBounds(250,430,150,25);
          add(labeltotal);
-         try {
-             Conn conn=new Conn();
-             String query="select * from customer where username='"+username+"'";
-            ResultSet rs= conn.s.executeQuery(query);
-            while(rs.next()){
-                labelusername.setText(rs.getString("username"));
-                labelid.setText(rs.getString("id"));
-                labelnumber.setText(rs.getString("number"));
-                labelphone.setText(rs.getString("phone"));
-                
-
-            }
-         } catch (Exception e) {
-            e.printStackTrace();
-         }
+          String customerQuery = "select * from customer where username=?";
+          try (Conn conn = new Conn();
+               PreparedStatement pstmt = conn.c.prepareStatement(customerQuery)) {
+              pstmt.setString(1, username);
+              try (ResultSet rs = pstmt.executeQuery()) {
+                  while(rs.next()){
+                      labelusername.setText(rs.getString("username"));
+                      labelid.setText(rs.getString("id"));
+                      labelnumber.setText(rs.getString("number"));
+                      labelphone.setText(rs.getString("phone"));
+                  }
+              }
+          } catch (Exception e) {
+              e.printStackTrace();
+          }
 
 
          checkprice=new JButton("Check Price");
@@ -183,43 +184,56 @@ public class Bookhotel extends JFrame implements ActionListener{
     }
     public void actionPerformed(ActionEvent ae){
         if(ae.getSource()==checkprice){
-            try
-       {  Conn c=new Conn();
-        ResultSet rs=c.s.executeQuery("select * from hotel where name='"+chotel.getSelectedItem()+"'");
-        while(rs.next()){
-            int cost=Integer.parseInt(rs.getString("costperperson"));
-            int food=Integer.parseInt(rs.getString("foodincluded"));
-            int ac=Integer.parseInt(rs.getString("acroom"));
-            
-            int persons=Integer.parseInt(tfpersons.getText());
-            int days=Integer.parseInt(tfdays.getText());
+         String hotelQuery = "select * from hotel where name=?";
+         try (Conn c = new Conn();
+              PreparedStatement pstmt = c.c.prepareStatement(hotelQuery)) {
+             pstmt.setString(1, chotel.getSelectedItem());
+             try (ResultSet rs = pstmt.executeQuery()) {
+                 while(rs.next()){
+                     int cost=Integer.parseInt(rs.getString("costperperson"));
+                     int food=Integer.parseInt(rs.getString("foodincluded"));
+                     int ac=Integer.parseInt(rs.getString("acroom"));
+                     
+                     int persons=Integer.parseInt(tfpersons.getText());
+                     int days=Integer.parseInt(tfdays.getText());
 
-            String acselected=cac.getSelectedItem();
-            String foodselected=cfood.getSelectedItem();
+                     String acselected=cac.getSelectedItem();
+                     String foodselected=cfood.getSelectedItem();
 
-            if(persons * days>0){
-                int total=0;
-                total+=acselected.equals("AC")?ac:0;
-                total+=foodselected.equals("Yes")?food:0;
-                total+=cost;
-                total=total *persons*days;
-                labeltotal.setText("Rs"+total);
-                 }
-                 else{
-                JOptionPane.showMessageDialog(null, "Please enter valid number");
-            }
-        
-        } 
-        
-        }catch(Exception e){
-            e.printStackTrace();
-        }
+                     if(persons * days>0){
+                         int total=0;
+                         total+=acselected.equals("AC")?ac:0;
+                         total+=foodselected.equals("Yes")?food:0;
+                         total+=cost;
+                         total=total *persons*days;
+                         labeltotal.setText("Rs"+total);
+                     }
+                     else{
+                         JOptionPane.showMessageDialog(null, "Please enter valid number");
+                     }
+                 } 
+             }
+         } catch(Exception e){
+             e.printStackTrace();
+         }
         }else if(ae.getSource()==bookpackage){
 
-            try {
-                Conn c=new Conn();
-                c.s.executeUpdate("insert into bookhotel values('"+labelusername.getText()+"','"+chotel.getSelectedItem()+"','"+tfpersons.getText()+"','"+tfdays.getText()+"','"+cac.getSelectedItem()+"','"+cfood.getSelectedItem()+"','"+labelid.getText()+"','"+labelnumber.getText()+"','"+labelphone.getText()+"','"+labeltotal.getText()+"','"+"Confirmed')");
+            String insertQuery = "insert into bookhotel values(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+            try (Conn c = new Conn();
+                 PreparedStatement pstmt = c.c.prepareStatement(insertQuery)) {
+                pstmt.setString(1, labelusername.getText());
+                pstmt.setString(2, chotel.getSelectedItem());
+                pstmt.setString(3, tfpersons.getText());
+                pstmt.setString(4, tfdays.getText());
+                pstmt.setString(5, cac.getSelectedItem());
+                pstmt.setString(6, cfood.getSelectedItem());
+                pstmt.setString(7, labelid.getText());
+                pstmt.setString(8, labelnumber.getText());
+                pstmt.setString(9, labelphone.getText());
+                pstmt.setString(10, labeltotal.getText());
+                pstmt.setString(11, "Confirmed");
                 
+                pstmt.executeUpdate();
                 JOptionPane.showMessageDialog(null, "Hotel Booked Successflly");
                 setVisible(false);
             } catch (Exception e) {

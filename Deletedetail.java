@@ -3,6 +3,7 @@ import java.awt.Color;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 
 import javax.swing.ImageIcon;
@@ -114,41 +115,54 @@ public class Deletedetail extends JFrame implements ActionListener{
          image2.setBounds(600,400,600,200);
          add(image2);
 
-         try {
-             Conn conn=new Conn();
-             String query="select * from customer where username='"+username+"'";
-            ResultSet rs= conn.s.executeQuery(query);
-            while(rs.next()){
-                labelusername.setText(rs.getString("username"));
-                labelid.setText(rs.getString("id"));
-                labelnumber.setText(rs.getString("number"));
-                labelname.setText(rs.getString("name"));
-                labelgender.setText(rs.getString("gender"));
-                labelcountry.setText(rs.getString("country"));
-                labeladdress.setText(rs.getString("address"));
-                labelphone.setText(rs.getString("phone"));
-                labelemail.setText(rs.getString("email"));   
-
-            }
-         } catch (Exception e) {
-            e.printStackTrace();
-         }
+          String query = "select * from customer where username=?";
+          try (Conn conn = new Conn();
+               PreparedStatement pstmt = conn.c.prepareStatement(query)) {
+              pstmt.setString(1, username);
+              try (ResultSet rs = pstmt.executeQuery()) {
+                  while(rs.next()){
+                      labelusername.setText(rs.getString("username"));
+                      labelid.setText(rs.getString("id"));
+                      labelnumber.setText(rs.getString("number"));
+                      labelname.setText(rs.getString("name"));
+                      labelgender.setText(rs.getString("gender"));
+                      labelcountry.setText(rs.getString("country"));
+                      labeladdress.setText(rs.getString("address"));
+                      labelphone.setText(rs.getString("phone"));
+                      labelemail.setText(rs.getString("email"));   
+                  }
+              }
+          } catch (Exception e) {
+              e.printStackTrace();
+          }
          setVisible(true);
 
     }
     public void actionPerformed(ActionEvent ae)
-    {try {
-        Conn c=new Conn();
-        c.s.executeUpdate("delete from account where username='"+username+"'");
-        c.s.executeUpdate("delete from customer where username='"+username+"'");
-        c.s.executeUpdate("delete from bookpackage where username='"+username+"'");
-        c.s.executeUpdate("delete from bookhotel where username='"+username+"'");
-
-        JOptionPane.showMessageDialog(null, "Data Deleted Successfully!");
-        System.exit(0);
-    } catch (Exception e) {
-        e.printStackTrace();
-    }
+     {
+        try (Conn c = new Conn();
+             PreparedStatement delAcc = c.c.prepareStatement("delete from account where username=?");
+             PreparedStatement delCust = c.c.prepareStatement("delete from customer where username=?");
+             PreparedStatement delPack = c.c.prepareStatement("delete from bookpackage where username=?");
+             PreparedStatement delHot = c.c.prepareStatement("delete from bookhotel where username=?")) {
+            
+            delAcc.setString(1, username);
+            delAcc.executeUpdate();
+            
+            delCust.setString(1, username);
+            delCust.executeUpdate();
+            
+            delPack.setString(1, username);
+            delPack.executeUpdate();
+            
+            delHot.setString(1, username);
+            delHot.executeUpdate();
+            
+            JOptionPane.showMessageDialog(null, "Data Deleted Successfully!");
+            System.exit(0);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         
     }
     public static void main(String[] args) {

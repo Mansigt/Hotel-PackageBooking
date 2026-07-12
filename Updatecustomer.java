@@ -4,6 +4,7 @@ import java.awt.Font;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 
 import javax.swing.ImageIcon;
@@ -130,25 +131,25 @@ public class Updatecustomer extends JFrame implements ActionListener {
         image.setBounds(400,80,450,300);
         add(image);
 
-        try {
-            Conn c=new Conn();
-            ResultSet rs=c.s.executeQuery("select * from customer where username='"+username+"'");
-            while(rs.next()){
-                labelusername.setText(rs.getString("username"));
-                labelname.setText(rs.getString("name"));
-                tfid.setText(rs.getString("id"));
-                 tfnumber.setText(rs.getString("number"));
-                  tfgender.setText(rs.getString("gender"));
-                   tfcountry.setText(rs.getString("country"));
+        String query = "select * from customer where username=?";
+        try (Conn c = new Conn();
+             PreparedStatement pstmt = c.c.prepareStatement(query)) {
+            pstmt.setString(1, username);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                while(rs.next()){
+                    labelusername.setText(rs.getString("username"));
+                    labelname.setText(rs.getString("name"));
+                    tfid.setText(rs.getString("id"));
+                    tfnumber.setText(rs.getString("number"));
+                    tfgender.setText(rs.getString("gender"));
+                    tfcountry.setText(rs.getString("country"));
                     tfaddress.setText(rs.getString("address"));
-                     tfphone.setText(rs.getString("phone"));
-                      tfemail.setText(rs.getString("email"));
-                       
-
-
+                    tfphone.setText(rs.getString("phone"));
+                    tfemail.setText(rs.getString("email"));
+                }
             }
         } catch (Exception e) {
-        e.printStackTrace();
+            e.printStackTrace();
         }
 
         
@@ -167,15 +168,25 @@ public class Updatecustomer extends JFrame implements ActionListener {
             String phone=tfphone.getText();
             String email=tfemail.getText();
 
-            try {
-            Conn c=new Conn();
-            String query="update customer set username='"+username+"',id='"+id+"',number='"+number+"',name='"+name+"',gender='"+gender+"',country='"+country+"',address='"+address+"',phone='"+phone+"',email='"+email+"'";
-            c.s.executeUpdate(query);
-            JOptionPane.showMessageDialog(null, "customer details updated succcessfully");
-            setVisible(false);        
+            String updateQuery = "update customer set id=?, number=?, name=?, gender=?, country=?, address=?, phone=?, email=? where username=?";
+            try (Conn c = new Conn();
+                 PreparedStatement pstmt = c.c.prepareStatement(updateQuery)) {
+                pstmt.setString(1, id);
+                pstmt.setString(2, number);
+                pstmt.setString(3, name);
+                pstmt.setString(4, gender);
+                pstmt.setString(5, country);
+                pstmt.setString(6, address);
+                pstmt.setString(7, phone);
+                pstmt.setString(8, email);
+                pstmt.setString(9, username);
+                
+                pstmt.executeUpdate();
+                JOptionPane.showMessageDialog(null, "customer details updated succcessfully");
+                setVisible(false);        
             } catch (Exception e) {
-            e.printStackTrace();
-        }
+                e.printStackTrace();
+            }
 
         }else{
             setVisible(false);

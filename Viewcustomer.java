@@ -3,6 +3,7 @@ import java.awt.Color;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 
 import javax.swing.ImageIcon;
@@ -112,25 +113,26 @@ public class Viewcustomer extends JFrame implements ActionListener{
          image2.setBounds(600,400,600,200);
          add(image2);
 
-         try {
-             Conn conn=new Conn();
-             String query="select * from customer where username='"+username+"'";
-            ResultSet rs= conn.s.executeQuery(query);
-            while(rs.next()){
-                labelusername.setText(rs.getString("username"));
-                labelid.setText(rs.getString("id"));
-                labelnumber.setText(rs.getString("number"));
-                labelname.setText(rs.getString("name"));
-                labelgender.setText(rs.getString("gender"));
-                labelcountry.setText(rs.getString("country"));
-                labeladdress.setText(rs.getString("address"));
-                labelphone.setText(rs.getString("phone"));
-                labelemail.setText(rs.getString("email"));   
-
-            }
-         } catch (Exception e) {
-            e.printStackTrace();
-         }
+          String query = "select * from customer where username=?";
+          try (Conn conn = new Conn();
+               PreparedStatement pstmt = conn.c.prepareStatement(query)) {
+              pstmt.setString(1, username);
+              try (ResultSet rs = pstmt.executeQuery()) {
+                  while(rs.next()){
+                      labelusername.setText(rs.getString("username"));
+                      labelid.setText(rs.getString("id"));
+                      labelnumber.setText(rs.getString("number"));
+                      labelname.setText(rs.getString("name"));
+                      labelgender.setText(rs.getString("gender"));
+                      labelcountry.setText(rs.getString("country"));
+                      labeladdress.setText(rs.getString("address"));
+                      labelphone.setText(rs.getString("phone"));
+                      labelemail.setText(rs.getString("email"));   
+                  }
+              }
+          } catch (Exception e) {
+              e.printStackTrace();
+          }
          setVisible(true);
 
     }

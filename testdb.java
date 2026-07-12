@@ -3,6 +3,7 @@ import java.awt.Font;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -96,29 +97,22 @@ public class testdb extends JFrame implements ActionListener {
             String username = tfusername.getText();
             String pass = tfpassword.getText();
 
-            try {
-                // Ensure Conn object is fully initialized
-                Conn c = new Conn();
-                if (c.s == null) {
-                    JOptionPane.showMessageDialog(this, "Database connection failed!");
-                    return;
+            String query = "SELECT * FROM account WHERE username=? AND password=?";
+            try (Conn c = new Conn();
+                 PreparedStatement pstmt = c.c.prepareStatement(query)) {
+                
+                pstmt.setString(1, username);
+                pstmt.setString(2, pass);
+                
+                try (ResultSet rs = pstmt.executeQuery()) {
+                    if (rs.next()) {
+                        setVisible(false);
+                        String role = rs.getString("role");
+                        new Loading(username, role); // your Loading class
+                    } else {
+                        JOptionPane.showMessageDialog(null, "Incorrect password or username");
+                    }
                 }
-
-                String query = "SELECT * FROM account WHERE username='" + username + "' AND password='" + pass + "'";
-                ResultSet rs = c.s.executeQuery(query);
-
-                if (rs.next()) {
-                    setVisible(false);
-                    String role = rs.getString("role");
-                    new Loading(username,role); // your Loading class
-                } else {
-                    JOptionPane.showMessageDialog(null, "Incorrect password or username");
-                }
-
-                rs.close();
-                // optionally close connection if you want:
-                // c.s.close(); c.c.close();
-
             } catch (Exception e) {
                 JOptionPane.showMessageDialog(this, "Error: " + e.getMessage());
                 e.printStackTrace();

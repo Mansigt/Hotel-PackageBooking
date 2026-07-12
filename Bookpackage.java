@@ -5,6 +5,7 @@ import java.awt.Font;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -97,21 +98,21 @@ public class Bookpackage extends JFrame implements ActionListener{
          labeltotal=new JLabel();
          labeltotal.setBounds(250,310,150,25);
          add(labeltotal);
-         try {
-             Conn conn=new Conn();
-             String query="select * from customer where username='"+username+"'";
-            ResultSet rs= conn.s.executeQuery(query);
-            while(rs.next()){
-                labelusername.setText(rs.getString("username"));
-                labelid.setText(rs.getString("id"));
-                labelnumber.setText(rs.getString("number"));
-                labelphone.setText(rs.getString("phone"));
-                
-
-            }
-         } catch (Exception e) {
-            e.printStackTrace();
-         }
+          String customerQuery = "select * from customer where username=?";
+          try (Conn conn = new Conn();
+               PreparedStatement pstmt = conn.c.prepareStatement(customerQuery)) {
+              pstmt.setString(1, username);
+              try (ResultSet rs = pstmt.executeQuery()) {
+                  while(rs.next()){
+                      labelusername.setText(rs.getString("username"));
+                      labelid.setText(rs.getString("id"));
+                      labelnumber.setText(rs.getString("number"));
+                      labelphone.setText(rs.getString("phone"));
+                  }
+              }
+          } catch (Exception e) {
+              e.printStackTrace();
+          }
 
 
          checkprice=new JButton("Check Price");
@@ -159,14 +160,19 @@ public class Bookpackage extends JFrame implements ActionListener{
          labeltotal.setText("Rs"+cost);
         }else if(ae.getSource()==bookpackage){
 
-            try {
-                Conn c=new Conn();
-                String query= "insert into bookpackage values('"+labelusername.getText()+"','"+cpackage.getSelectedItem()+"','"+tfpersons.getText()+"','"+labelid.getText()+"','"+labelnumber.getText()+"','"+labelphone.getText()+"','"+labeltotal.getText()+"','"+"Confirmed')";
+            String insertQuery = "insert into bookpackage values(?, ?, ?, ?, ?, ?, ?, ?)";
+            try (Conn c = new Conn();
+                 PreparedStatement pstmt = c.c.prepareStatement(insertQuery)) {
+                pstmt.setString(1, labelusername.getText());
+                pstmt.setString(2, cpackage.getSelectedItem());
+                pstmt.setString(3, tfpersons.getText());
+                pstmt.setString(4, labelid.getText());
+                pstmt.setString(5, labelnumber.getText());
+                pstmt.setString(6, labelphone.getText());
+                pstmt.setString(7, labeltotal.getText());
+                pstmt.setString(8, "Confirmed");
                 
-                //System.out.println(query);
-
-                c.s.executeUpdate(query);
-
+                pstmt.executeUpdate();
                 JOptionPane.showMessageDialog(null, "Package Booked Successflly");
                 setVisible(false);
             } catch (Exception e) {
