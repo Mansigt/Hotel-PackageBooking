@@ -2,6 +2,32 @@
 
 A desktop-based Hotel and Package Booking System developed using Java Swing, JDBC, and MySQL. The system allows customers to book travel packages and hotels while administrators can monitor users and bookings through a dedicated admin dashboard.
 
+---
+
+## 📸 Screenshots
+
+Here are previews of the user interface:
+
+### 📊 Customer Dashboard
+![Customer Dashboard](screenshots/customer_dashboard.png)
+
+### 🔒 Login & Signup
+| Login Page | Signup Page |
+| :---: | :---: |
+| ![Login](screenshots/login.png) | ![Signup](screenshots/signup.png) |
+
+### ✈️ Travel Packages & Booking
+| Check Packages | Book Package |
+| :---: | :---: |
+| ![Check Packages](screenshots/check_packages.png) | ![Book Package](screenshots/book_package.png) |
+
+### 🏨 Hotel Booking & Recovery
+| Book Hotel | Forgot Password |
+| :---: | :---: |
+| ![Book Hotel](screenshots/book_hotel.png) | ![Forgot Password](screenshots/forgetpassword.png) |
+
+---
+
 ## Technologies Used
 
 * Java
